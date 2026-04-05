@@ -1,19 +1,32 @@
+// src/main/java/com/example/model/ReviewResponse.java
 package com.example.model;
 
 public class ReviewResponse {
-    private String message;
-    private Integer score;
+    private String staticAnalysis;
+    private String aiReview;
 
-    public ReviewResponse() {} // default constructor
+    // Constructors
+    public ReviewResponse() {}
 
-    public ReviewResponse(String message, Integer score) {
-        this.message = message;
-        this.score = score;
+    public ReviewResponse(String staticAnalysis, String aiReview) {
+        this.staticAnalysis = staticAnalysis;
+        this.aiReview = aiReview;
     }
 
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
+    // Getters and Setters
+    public String getStaticAnalysis() {
+        return staticAnalysis;
+    }
 
-    public Integer getScore() { return score; }
-    public void setScore(Integer score) { this.score = score; }
+    public void setStaticAnalysis(String staticAnalysis) {
+        this.staticAnalysis = staticAnalysis;
+    }
+
+    public String getAiReview() {
+        return aiReview;
+    }
+
+    public void setAiReview(String aiReview) {
+        this.aiReview = aiReview;
+    }
 }
