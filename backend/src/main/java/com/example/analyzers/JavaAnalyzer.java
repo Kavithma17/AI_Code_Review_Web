@@ -1,8 +1,6 @@
 package com.example.analyzers;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,13 +11,9 @@ import com.puppycrawl.tools.checkstyle.api.AuditListener;
 import com.puppycrawl.tools.checkstyle.api.Configuration;
 
 import net.sourceforge.pmd.PMDConfiguration;
-import net.sourceforge.pmd.Report;
-import net.sourceforge.pmd.RuleContext;
-import net.sourceforge.pmd.RuleSetFactory;
-import net.sourceforge.pmd.RuleSets;
-import net.sourceforge.pmd.RuleViolation;
-import net.sourceforge.pmd.SourceCodeProcessor;
-import net.sourceforge.pmd.lang.LanguageRegistry;
+import net.sourceforge.pmd.PmdAnalysis;
+import net.sourceforge.pmd.reporting.Report;
+import net.sourceforge.pmd.reporting.RuleViolation;
 
 public class JavaAnalyzer {
 
@@ -116,38 +110,31 @@ public class JavaAnalyzer {
     }
 
     // ================= PMD =================
-    // ================= PMD =================
-    @SuppressWarnings("deprecation")
     private List<String> runPMD(File file) {
         List<String> issues = new ArrayList<>();
         
         try {
             PMDConfiguration config = new PMDConfiguration();
-config.setDefaultLanguageVersion(
-        LanguageRegistry.findLanguageByTerseName("java").getDefaultVersion()
-);
-            RuleSetFactory ruleSetFactory = new RuleSetFactory();
-            RuleSets ruleSets = ruleSetFactory.createRuleSets(config.getRuleSets());
-
-            RuleContext ctx = new RuleContext();
-            Report report = new Report();
-            ctx.setReport(report);
-            ctx.setSourceCodeFilename(file.getAbsolutePath());
             
-            // Explicitly tell PMD we are analyzing Java code to fix the 'null' error
-            ctx.setLanguageVersion(LanguageRegistry.getLanguage("java").getDefaultVersion());
+            // Add rulesets
+            config.addRuleSet("category/java/bestpractices.xml");
+            config.addRuleSet("category/java/errorprone.xml");
+            
+            // Point PMD directly to the file
+            config.addInputPath(file.toPath());
 
-            try (InputStream in = new FileInputStream(file)) {
-                SourceCodeProcessor processor = new SourceCodeProcessor(config);
-                processor.processSourceCode(in, ruleSets, ctx);
-            }
-
-            for (RuleViolation v : report.getViolations()) {
-                issues.add("Line " + v.getBeginLine() + ": " + v.getDescription());
+            // Run analysis
+            try (PmdAnalysis analysis = PmdAnalysis.create(config)) {
+                Report report = analysis.performAnalysisAndCollectReport();
+                
+                for (RuleViolation v : report.getViolations()) {
+                    issues.add("Line " + v.getBeginLine() + ": " + v.getDescription());
+                }
             }
         } catch (Exception e) {
-            issues.add("PMD Analysis Error: " + e.getMessage());
+            issues.add("PMD Error: " + e.getMessage());
         }
+        
         return issues;
     }
 
